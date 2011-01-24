@@ -35,7 +35,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\Users\VAIO\Local Settings\Application Data\Growl\2.0.0.0\Forwarders\XBMC Forwarder\</OutputPath>
+    <OutputPath>..\..\..\..\Users\VAIO\Local Settings\Application Data\Growl\2.0.0.0\Forwarders\XBMC Forwarder\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -69,7 +69,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="QuerystringBuilder.cs" />
     <Compile Include="XbmcDestination.cs" />
     <Compile Include="XbmcForwardHandler.cs" />
     <Compile Include="XbmcInputs.cs">

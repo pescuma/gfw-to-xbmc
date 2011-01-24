@@ -4,9 +4,6 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Net;
-using System.Text;
-using System.Web;
 using Growl.Connector;
 using Growl.Destinations;
 using XBMC;
@@ -16,28 +13,13 @@ namespace org.pescuma.XbmcForwarder
 	[Serializable]
 	public class XbmcDestination : ForwardDestination
 	{
-		public XbmcDestination(string server, int port, bool useHTTP)
+		public XbmcDestination(string server)
 			: base("XBMC", true)
 		{
 			Server = server;
-			Port = port;
-			UseHTTP = useHTTP;
 		}
 
 		public string Server { get; set; }
-
-		public int Port { get; set; }
-
-		public bool UseHTTP { get; set; }
-
-		public bool IsLocalhost
-		{
-			get
-			{
-				return "localhost".Equals(Server, StringComparison.CurrentCultureIgnoreCase)
-				       || "127.0.0.1".Equals(Server, StringComparison.CurrentCultureIgnoreCase);
-			}
-		}
 
 		/// <summary>
 		/// Gets the address display.
@@ -79,88 +61,48 @@ namespace org.pescuma.XbmcForwarder
 		/// Unless your forwarder is going to handle socket-style callbacks from the remote computer, you should ignore
 		/// the <paramref name="callbackFunction"/> parameter.
 		/// </remarks>
-		public override void ForwardNotification(Growl.Connector.Notification notification,
-		                                         Growl.Connector.CallbackContext callbackContext,
-		                                         Growl.Connector.RequestInfo requestInfo, bool isIdle,
+		public override void ForwardNotification(Notification notification,
+		                                         CallbackContext callbackContext, RequestInfo requestInfo,
+		                                         bool isIdle,
 		                                         ForwardedNotificationCallbackHandler callbackFunction)
 		{
 			try
 			{
 				Image img = null;
+				var tempFile = "";
 
-				if (UseHTTP)
+				try
 				{
-					StringBuilder url = new StringBuilder();
-
-					url.Append("http://").Append(Server);
-					if (Port > 0)
-						url.Append(":").Append(Port);
-
-					url.Append("/xbmcCmds/xbmcHttp?command=ExecBuiltIn(Notification(").Append(
-						Encode(notification.Title)).Append(",").Append(Encode(notification.Text));
-
-					url.Append(",").Append(notification.Sticky ? 20000 : 4000);
-
-					if (IsLocalhost)
+					var iconType = IconType.ICON_NONE;
+					img = GetImage(notification);
+					if (img != null)
 					{
-						img = GetImage(notification);
-						if (img != null)
-						{
-							var filename = GetTmpFile(".png");
-							img.Save(filename, ImageFormat.Png);
-							url.Append(",").Append(filename);
-						}
+						tempFile = Path.GetTempFileName();
+						iconType = IconType.ICON_PNG;
+						img.Save(tempFile, ImageFormat.Png);
 					}
 
-					url.Append("))");
+					EventClient eventClient = new EventClient();
 
-					Growl.CoreLibrary.WebClientEx wc = new Growl.CoreLibrary.WebClientEx();
-					using (wc)
+					if (!eventClient.Connect(Server))
 					{
-						wc.Headers.Add(HttpRequestHeader.UserAgent, "Growl for Windows XBMC Plugin/1.0");
-						string result = wc.UploadString(url.ToString(), "");
-
-						if (result.IndexOf("OK") < 0)
-							Growl.CoreLibrary.DebugInfo.WriteLine("XBMC forwarding failed: " + result);
+						Growl.CoreLibrary.DebugInfo.WriteLine("Could not connect to XBMC server at " + Server);
+						return;
 					}
+
+					if (
+						!eventClient.SendNotification(ToSingleLine(notification.Title),
+						                              ToSingleLine(notification.Text), iconType, tempFile))
+						Growl.CoreLibrary.DebugInfo.WriteLine("Error sending notification");
+
+					eventClient.Disconnect();
 				}
-				else
+				finally
 				{
-					string tempFile = "";
+					if (img != null)
+						img.Dispose();
 
-					try
-					{
-						var iconType = IconType.ICON_NONE;
-						img = GetImage(notification);
-						if (img != null)
-						{
-							tempFile = Path.GetTempFileName();
-							iconType = IconType.ICON_PNG;
-							img.Save(tempFile, ImageFormat.Png);
-						}
-
-						EventClient eventClient = new EventClient();
-
-						if (!eventClient.Connect(Server, Port > 0 ? Port : EventClient.STD_PORT))
-						{
-							Growl.CoreLibrary.DebugInfo.WriteLine("Could not connect to XBMC server at " + Server);
-							return;
-						}
-
-						if (
-							!eventClient.SendNotification(ToSingleLine(notification.Title),
-							                              ToSingleLine(notification.Text), iconType, tempFile))
-							Growl.CoreLibrary.DebugInfo.WriteLine("Error sending notification");
-
-						eventClient.Disconnect();
-					}
-					finally
-					{
-						if (img != null)
-							img.Dispose();
-
-						Delete(tempFile);
-					}
+					Delete(tempFile);
 				}
 			}
 			catch (Exception ex)
@@ -186,23 +128,13 @@ namespace org.pescuma.XbmcForwarder
 
 		private static Image ResizeImage(Image imgToResize, Size size)
 		{
-			int sourceWidth = imgToResize.Width;
-			int sourceHeight = imgToResize.Height;
+			float scaleWidth = size.Width / (float) imgToResize.Width;
+			float scaleHeight = size.Height / (float) imgToResize.Height;
 
-			float nPercent = 0;
-			float nPercentW = 0;
-			float nPercentH = 0;
+			scaleWidth = scaleHeight = Math.Min(scaleWidth, scaleHeight);
 
-			nPercentW = (size.Width / (float) sourceWidth);
-			nPercentH = (size.Height / (float) sourceHeight);
-
-			if (nPercentH < nPercentW)
-				nPercent = nPercentH;
-			else
-				nPercent = nPercentW;
-
-			int destWidth = (int) (sourceWidth * nPercent);
-			int destHeight = (int) (sourceHeight * nPercent);
+			int destWidth = (int) (imgToResize.Width * scaleWidth);
+			int destHeight = (int) (imgToResize.Height * scaleHeight);
 
 			Bitmap b = new Bitmap(destWidth, destHeight);
 			Graphics g = Graphics.FromImage(b);
@@ -212,11 +144,6 @@ namespace org.pescuma.XbmcForwarder
 			g.Dispose();
 
 			return b;
-		}
-
-		private string Encode(String text)
-		{
-			return HttpUtility.UrlEncode(ToSingleLine(text));
 		}
 
 		private string ToSingleLine(string text)
@@ -247,7 +174,7 @@ namespace org.pescuma.XbmcForwarder
 		/// <returns><see cref="XbmcDestination"/></returns>
 		public override DestinationBase Clone()
 		{
-			return new XbmcDestination(Server, Port, UseHTTP);
+			return new XbmcDestination(Server);
 		}
 
 		/// <summary>
@@ -257,48 +184,6 @@ namespace org.pescuma.XbmcForwarder
 		public override Image GetIcon()
 		{
 			return XbmcForwardHandler.GetIcon();
-		}
-
-		private class TmpFile
-		{
-			public readonly string TempFile;
-			public readonly string ImageFile;
-			public readonly DateTime CreationTime;
-
-			public TmpFile(string tempFile, string extension)
-			{
-				TempFile = tempFile;
-				ImageFile = tempFile + extension;
-				CreationTime = DateTime.Now;
-			}
-		}
-
-		private static readonly List<TmpFile> TmpFiles = new List<TmpFile>();
-
-		private static string GetTmpFile(string extension)
-		{
-			DeleteOldFiles();
-
-			TmpFile file = new TmpFile(Path.GetTempFileName(), extension);
-			TmpFiles.Add(file);
-
-			return file.ImageFile;
-		}
-
-		private static void DeleteOldFiles()
-		{
-			DateTime now = DateTime.Now;
-			for (int i = TmpFiles.Count - 1; i >= 0; i--)
-			{
-				var file = TmpFiles[i];
-
-				if ((now - file.CreationTime).TotalSeconds > 30)
-				{
-					Delete(file.ImageFile);
-					Delete(file.TempFile);
-					TmpFiles.RemoveAt(i);
-				}
-			}
 		}
 
 		private static void Delete(string tmpFile)
