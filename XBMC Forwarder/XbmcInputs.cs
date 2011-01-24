@@ -6,13 +6,9 @@ namespace org.pescuma.XbmcForwarder
 {
 	public class XbmcInputs : DestinationSettingsPanel
 	{
-		private Label portLabel;
 		private Label serverLabel;
 		private HighlightTextBox serverText;
 		private Label labelInfo;
-		private ComboBox connectionTypeCombo;
-		private Label connectionTypeLabel;
-		private HighlightTextBox portText;
 
 		public XbmcInputs()
 		{
@@ -21,98 +17,54 @@ namespace org.pescuma.XbmcForwarder
 
 		private void InitializeComponent()
 		{
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(XbmcInputs));
-			this.portText = new Growl.Destinations.HighlightTextBox();
-			this.portLabel = new System.Windows.Forms.Label();
-			this.serverText = new Growl.Destinations.HighlightTextBox();
-			this.serverLabel = new System.Windows.Forms.Label();
-			this.labelInfo = new System.Windows.Forms.Label();
-			this.connectionTypeLabel = new System.Windows.Forms.Label();
-			this.connectionTypeCombo = new System.Windows.Forms.ComboBox();
-			this.panelDetails.SuspendLayout();
-			this.SuspendLayout();
+			serverText = new Growl.Destinations.HighlightTextBox();
+			serverLabel = new System.Windows.Forms.Label();
+			labelInfo = new System.Windows.Forms.Label();
+			panelDetails.SuspendLayout();
+			SuspendLayout();
 			// 
 			// panelDetails
 			// 
-			this.panelDetails.Controls.Add(this.serverLabel);
-			this.panelDetails.Controls.Add(this.serverText);
-			this.panelDetails.Controls.Add(this.portLabel);
-			this.panelDetails.Controls.Add(this.portText);
-			this.panelDetails.Controls.Add(this.connectionTypeCombo);
-			this.panelDetails.Controls.Add(this.connectionTypeLabel);
-			this.panelDetails.Controls.Add(this.labelInfo);
-			// 
-			// portText
-			// 
-			this.portText.HighlightColor = System.Drawing.Color.FromArgb(((int)(((byte)(254)))), ((int)(((byte)(250)))), ((int)(((byte)(184)))));
-			this.portText.Location = new System.Drawing.Point(108, 35);
-			this.portText.Name = "portText";
-			this.portText.Size = new System.Drawing.Size(211, 20);
-			this.portText.TabIndex = 4;
-			// 
-			// portLabel
-			// 
-			this.portLabel.AutoSize = true;
-			this.portLabel.Location = new System.Drawing.Point(19, 38);
-			this.portLabel.Name = "portLabel";
-			this.portLabel.Size = new System.Drawing.Size(29, 13);
-			this.portLabel.TabIndex = 3;
-			this.portLabel.Text = "Port:";
+			panelDetails.Controls.Add(serverLabel);
+			panelDetails.Controls.Add(serverText);
+			panelDetails.Controls.Add(labelInfo);
 			// 
 			// serverText
 			// 
-			this.serverText.HighlightColor = System.Drawing.Color.FromArgb(((int)(((byte)(254)))), ((int)(((byte)(250)))), ((int)(((byte)(184)))));
-			this.serverText.Location = new System.Drawing.Point(108, 9);
-			this.serverText.Name = "serverText";
-			this.serverText.Size = new System.Drawing.Size(211, 20);
-			this.serverText.TabIndex = 2;
+			serverText.HighlightColor = System.Drawing.Color.FromArgb(((((254)))), ((((250)))), ((((184)))));
+			serverText.Location = new System.Drawing.Point(108, 20);
+			serverText.Name = "serverText";
+			serverText.Size = new System.Drawing.Size(211, 20);
+			serverText.TabIndex = 2;
+			serverText.TextChanged += serverText_TextChanged;
 			// 
 			// serverLabel
 			// 
-			this.serverLabel.AutoSize = true;
-			this.serverLabel.Location = new System.Drawing.Point(19, 12);
-			this.serverLabel.Name = "serverLabel";
-			this.serverLabel.Size = new System.Drawing.Size(83, 13);
-			this.serverLabel.TabIndex = 1;
-			this.serverLabel.Text = "XBMC machine:";
+			serverLabel.AutoSize = true;
+			serverLabel.Location = new System.Drawing.Point(19, 23);
+			serverLabel.Name = "serverLabel";
+			serverLabel.Size = new System.Drawing.Size(83, 13);
+			serverLabel.TabIndex = 1;
+			serverLabel.Text = "XBMC machine:";
 			// 
 			// labelInfo
 			// 
-			this.labelInfo.Location = new System.Drawing.Point(22, 94);
-			this.labelInfo.Name = "labelInfo";
-			this.labelInfo.Size = new System.Drawing.Size(296, 68);
-			this.labelInfo.TabIndex = 7;
-			this.labelInfo.Text = resources.GetString("labelInfo.Text");
-			// 
-			// connectionTypeLabel
-			// 
-			this.connectionTypeLabel.AutoSize = true;
-			this.connectionTypeLabel.Location = new System.Drawing.Point(19, 66);
-			this.connectionTypeLabel.Name = "connectionTypeLabel";
-			this.connectionTypeLabel.Size = new System.Drawing.Size(87, 13);
-			this.connectionTypeLabel.TabIndex = 5;
-			this.connectionTypeLabel.Text = "Connection type:";
-			// 
-			// connectionTypeCombo
-			// 
-			this.connectionTypeCombo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this.connectionTypeCombo.FormattingEnabled = true;
-			this.connectionTypeCombo.Items.AddRange(new object[] {
-            "Event client",
-            "HTTP"});
-			this.connectionTypeCombo.Location = new System.Drawing.Point(108, 63);
-			this.connectionTypeCombo.Name = "connectionTypeCombo";
-			this.connectionTypeCombo.Size = new System.Drawing.Size(211, 21);
-			this.connectionTypeCombo.TabIndex = 6;
+			labelInfo.Location = new System.Drawing.Point(33, 66);
+			labelInfo.Name = "labelInfo";
+			labelInfo.Size = new System.Drawing.Size(280, 68);
+			labelInfo.TabIndex = 7;
+			labelInfo.Text =
+				"Remember to enable \'Allow programs on this system to control XBMC\' in XBMC option"
+				+ "s.\r\n\r\nIf XBMC is in a different machine you also need to enable \'Allow programs "
+				+ "on other systems to control XBMC\'.";
 			// 
 			// XbmcInputs
 			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.Name = "XbmcInputs";
-			this.panelDetails.ResumeLayout(false);
-			this.panelDetails.PerformLayout();
-			this.ResumeLayout(false);
-
+			AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+			Name = "XbmcInputs";
+			panelDetails.ResumeLayout(false);
+			panelDetails.PerformLayout();
+			ResumeLayout(false);
 		}
 
 		/// <summary>
@@ -133,17 +85,11 @@ namespace org.pescuma.XbmcForwarder
 			// set text box values
 			serverText.Text = "";
 			serverText.Enabled = true;
-			portText.Text = "";
-			portText.Enabled = true;
-			connectionTypeCombo.SelectedIndex = 0;
-			connectionTypeCombo.Enabled = true;
 
 			XbmcDestination xbmc = db as XbmcDestination;
 			if (xbmc != null)
 			{
 				serverText.Text = xbmc.Server;
-				portText.Text = (xbmc.Port <= 0 ? "" : xbmc.Port.ToString());
-				connectionTypeCombo.SelectedIndex = xbmc.UseHTTP ? 1 : 0;
 			}
 
 			ValidateInputs();
@@ -160,12 +106,7 @@ namespace org.pescuma.XbmcForwarder
 		/// </remarks>
 		public override DestinationBase Create()
 		{
-			return new XbmcDestination(GetServer(), GetPort(), GetUseHTTP());
-		}
-
-		private bool GetUseHTTP()
-		{
-			return connectionTypeCombo.SelectedIndex == 1;
+			return new XbmcDestination(GetServer());
 		}
 
 		private string GetServer()
@@ -175,14 +116,6 @@ namespace org.pescuma.XbmcForwarder
 			if (ret == "")
 				ret = "localhost";
 			return ret;
-		}
-
-		private int GetPort()
-		{
-			int port;
-			if (!int.TryParse(portText.Text, out port))
-				port = 0;
-			return port;
 		}
 
 		/// <summary>
@@ -196,8 +129,6 @@ namespace org.pescuma.XbmcForwarder
 		{
 			XbmcDestination xbmc = (XbmcDestination) db;
 			xbmc.Server = GetServer();
-			xbmc.Port = GetPort();
-			xbmc.UseHTTP = GetUseHTTP();
 		}
 
 		private void ValidateInputs()
@@ -215,39 +146,10 @@ namespace org.pescuma.XbmcForwarder
 				serverText.Unhighlight();
 			}
 
-			// Port
-			if (String.IsNullOrEmpty(portText.Text))
-			{
-				// Use default (aka valid)
-			}
-			else
-			{
-				int port;
-				if (!int.TryParse(portText.Text, out port))
-				{
-					portText.Highlight();
-					valid = false;
-				}
-				else
-				{
-					portText.Unhighlight();
-				}
-			}
-
 			OnValidChanged(valid);
 		}
 
 		private void serverText_TextChanged(object sender, EventArgs e)
-		{
-			ValidateInputs();
-		}
-
-		private void portText_TextChanged(object sender, EventArgs e)
-		{
-			ValidateInputs();
-		}
-
-		private void connectionTypeCombo_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			ValidateInputs();
 		}
